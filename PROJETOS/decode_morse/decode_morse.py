@@ -6,35 +6,49 @@ que atuam na emissão e na recepção de sinais.
 O script tem a finalidade de decifrar uma mensagem em código morse e salvá-la em texto claro.
 '''
 
+from dotenv import load_dotenv
+import json
 import os
 import sys
 import datetime
-import pandas as pd
-from config import file_path, dict_morse
 
-def decode_morse(msg):
-    '''
-    input : mensagem em código morse com as letras separadas por espaços
-    output : palavra escrito em letras e algarismos
-    '''
-    msg_lst = msg.split(" ")
-    msg_claro = []
-    for letter in msg_lst:
-        msg_claro.append(dict_morse[letter])
-    return "".join(msg_claro)
+def decode_morse(msg, dictionary):
 
-def save_clear_msg_csv_hdr(msg_claro):
-    '''
-    input : mensagem em texto claro
-    output : palavra escrito em letras e algarismos, salva em arquivo csv
-    '''
-    now = datetime.datetime.now()
-    df = pd.DataFrame([[msg_claro, now]], columns=["mensagem", "datetime"])
-    hdr = not os.path.exists(file_path)
-    df.to_csv(file_path, mode ="a", index = False, header=hdr)
+    retorno = '' #Variavel de saida
+
+    morse_words = msg.split('  ') #Quebra a mensagem original em N palavras
+
+    for word in morse_words: #Para cada palavra na mensagem
+        morse_letters = word.split(' ') #Quebra a palavra em N letras
+        for letter in morse_letters: #Para cada letra na palavra
+            retorno += dictionary[letter] #Traduz a letra de morse com base no dict
+        retorno += ' ' #Separa as palavras da saida por espaco
+
+    return retorno.strip()
+
+
+def save_clear_msg_csv_hdr(filename, output):
+    header = 'mensagem;datetime\n' #Cabecalho de saida
+
+    if(os.path.exists(filename)): #Verifica se arquivo de saida ja existe
+        with open(filename, 'a') as arq:
+            row = output + ';' + datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S.%f') + '\n'
+            arq.write(row) #Se sim, adiciona uma linha
+    else:
+        with open(filename, 'a') as arq:
+            row = output + ';' + datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S.%f') + '\n'
+            arq.write(header + row)  #Se nao, adiciona cabecalho + uma linha
 
 if __name__ == "__main__":
-    msg_claro = decode_morse(sys.argv[1])
-    save_clear_msg_csv_hdr(msg_claro)
-    #print(save_clear_msg_csv_hdr.__doc__)
-    #print(pd.to_pickle.__doc__)
+
+    load_dotenv() #Importa as variaveis de ambiente
+
+    morse_dictionary = json.loads(os.getenv('dict_morse')) #Converte o de-para para dict
+
+    input_text = sys.argv[1]
+
+    output_text = decode_morse(input_text, morse_dictionary)
+
+    filename = os.getenv('file_path')
+
+    save_clear_msg_csv_hdr(filename, output_text)
