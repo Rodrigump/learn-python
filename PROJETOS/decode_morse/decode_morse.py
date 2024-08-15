@@ -43,12 +43,12 @@ if __name__ == "__main__":
 
     load_dotenv() #Importa as variaveis de ambiente
 
-    morse_dictionary = json.loads(os.getenv('dict_morse')) #Converte o de-para para dict
+    morse_dictionary = json.loads(os.getenv('dict_morse')) #Converte o de-para do .env para uma variavel dict
 
-    input_text = sys.argv[1]
+    input_text = sys.argv[1] #Le o texto de entrada em morse
 
-    output_text = decode_morse(input_text, morse_dictionary)
+    output_text = decode_morse(input_text, morse_dictionary) #Saida traduzida
 
-    filename = os.getenv('file_path')
+    filename = os.getenv('file_path') #Obtem o nome do arquivo de saida do .env
 
-    save_clear_msg_csv_hdr(filename, output_text)
+    save_clear_msg_csv_hdr(filename, output_text) #Escreve em arquivo csv
