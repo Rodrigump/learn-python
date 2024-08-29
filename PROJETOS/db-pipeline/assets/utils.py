@@ -96,12 +96,26 @@ def null_check(df, null_tolerance):
             
 def keys_check(df, cols_chaves):
     '''
-    Função ???????????????????????????
-    INPUT: ???????????????????????????
-    OUTPUT: ???????????????????????????
+    Função keys_check
+    INPUT: df = dataframe, cols_chaves = lista de colunas do arquivo metadados
+    OUTPUT: keys_false = colunas que não estão no dataframe
     '''
-    #colocar log info
-    pass
+    df_columns = df.columns.sort_values()
+    df_columns.sort_values()
+    cols_chaves.sort()
+    missing_keys = ''
+    keys_false = []
+    if len(df.columns) == len(cols_chaves):
+        logger.info(f'keys_check: true ; {datetime.datetime.now()}')
+        for columns_1 in cols_chaves:
+            if columns_1 in df_columns:
+                pass
+            else:
+                keys_false.append(f'cols_chaves missing keys: {columns_1}')
+                logger.info(f'cols_chaves missing keys: {columns_1}')
+    elif len(df.columns) != len(cols_chaves):
+        logger.info(f'keys_check: false ; {datetime.datetime.now()}')
+    return keys_false
 
 # Funções auxiliares -------------------------------------------
 

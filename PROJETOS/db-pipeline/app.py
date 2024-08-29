@@ -32,12 +32,23 @@ def data_clean(df, metadados):
 
 def feat_eng(df):
     '''
-    Função ???????????????????????????
-    INPUT: ???????????????????????????
-    OUTPUT: ???????????????????????????
+    Função feat_eng
+    INPUT: df = dataframe
+    OUTPUT: dataframe com colunas enriquecidas
     '''
     #colocar log info
-    pass
+    df["tempo_voo_esperado"] = (df["datetime_chegada_formatted"] - df["datetime_partida_formatted"]) / pd.Timedelta(hours=1)
+    df["tempo_voo_hr"] = df["tempo_voo"] /60
+    df["atraso"] = df["tempo_voo_hr"] - df["tempo_voo_esperado"]
+    df["dia_semana"] = df["data_voo"].dt.day_of_week #0=segunda
+    df["horario"] = df.loc[:,"datetime_partida_formatted"].dt.hour.apply(lambda x: classifica_hora(x))
+    return df
+
+def classifica_hora(hra):
+    if 0 <= hra < 6: return "MADRUGADA"
+    elif 6 <= hra < 12: return "MANHA"
+    elif 12 <= hra < 18: return "TARDE"
+    else: return "NOITE"
 
 def save_data_sqlite(df):
     try:
@@ -70,7 +81,9 @@ if __name__ == "__main__":
     df = pd.read_csv(os.getenv('DATA_PATH'),index_col=0)
     df = data_clean(df, metadados)
     utils.null_check(df, metadados["null_tolerance"])
-    utils.keys_check(df, metadados["cols_chaves"])
+    keys_false = utils.keys_check(df, metadados["cols_chaves"])
+    if len(keys_false) > 0:
+        raise ValueError("Verificar chaves dos campos incorretos no arquivo de log, caso contrário, o script não será executado.")
     df = feat_eng(df)
     #save_data_sqlite(df)
     fetch_sqlite_data(metadados["tabela"][0])
